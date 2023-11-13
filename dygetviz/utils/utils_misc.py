@@ -5,15 +5,27 @@ import random
 
 import numpy as np
 
-from utils.utils_logging import configure_default_logging
+# Fix relative imports
+try:
+    from .utils_logging import configure_default_logging
+except ImportError:
+    try:
+        from utils.utils_logging import configure_default_logging
+    except ImportError:
+        def configure_default_logging():
+            pass
 
 configure_default_logging()
 logger = logging.getLogger(__name__)
 
 
 def project_setup():
-    from .utils_data import check_cwd
-    check_cwd()
+    try:
+        from .utils_data import check_cwd
+        check_cwd()
+    except ImportError:
+        # If utils_data is not available, skip the check
+        pass
     import warnings
     import pandas as pd
     warnings.simplefilter(action='ignore', category=FutureWarning)

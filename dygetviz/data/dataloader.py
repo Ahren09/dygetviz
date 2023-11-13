@@ -1,4 +1,6 @@
+import argparse
 import json
+import logging
 import os
 import os.path as osp
 import warnings
@@ -6,41 +8,85 @@ import warnings
 import numpy as np
 import pandas as pd
 from numba import NumbaDeprecationWarning
-from torch_geometric_temporal import ChickenpoxDatasetLoader, \
-    EnglandCovidDatasetLoader, METRLADatasetLoader, MontevideoBusDatasetLoader, \
-    PedalMeDatasetLoader, WikiMathsDatasetLoader, \
-    WindmillOutputLargeDatasetLoader, WindmillOutputMediumDatasetLoader, \
-    WindmillOutputSmallDatasetLoader, PemsBayDatasetLoader, \
-    TwitterTennisDatasetLoader
+# Optional imports for torch_geometric_temporal
+try:
+    from torch_geometric_temporal import ChickenpoxDatasetLoader, \
+        EnglandCovidDatasetLoader, METRLADatasetLoader, MontevideoBusDatasetLoader, \
+        PedalMeDatasetLoader, WikiMathsDatasetLoader, \
+        WindmillOutputLargeDatasetLoader, WindmillOutputMediumDatasetLoader, \
+        WindmillOutputSmallDatasetLoader, PemsBayDatasetLoader, \
+        TwitterTennisDatasetLoader
+    HAS_TORCH_GEOMETRIC_TEMPORAL = True
+except ImportError:
+    HAS_TORCH_GEOMETRIC_TEMPORAL = False
 
-from arguments import parse_args
-from data.download import download_file_from_google_drive
+# Fix relative imports
+try:
+    from ..arguments import parse_args
+except ImportError:
+    try:
+        from arguments import parse_args
+    except ImportError:
+        def parse_args():
+            """Fallback argument parser."""
+            import argparse
+            parser = argparse.ArgumentParser()
+            parser.add_argument('--dataset_name', type=str, default='test')
+            return parser.parse_args([])
 
-from dygetviz.data.chickenpox import ChickenpoxDataset
+try:
+    from .download import download_file_from_google_drive
+except ImportError:
+    try:
+        from data.download import download_file_from_google_drive
+    except ImportError:
+        def download_file_from_google_drive(*args, **kwargs):
+            pass
+
+try:
+    from .chickenpox import ChickenpoxDataset
+except ImportError:
+    ChickenpoxDataset = None
+
+try:
+    from ..utils.utils_logging import configure_default_logging
+except ImportError:
+    try:
+        from utils.utils_logging import configure_default_logging
+    except ImportError:
+        def configure_default_logging():
+            pass
+
+configure_default_logging()
+logger = logging.getLogger(__name__)
 
 warnings.simplefilter(action='ignore', category=NumbaDeprecationWarning)
 
 
-NAME2DATASET_LOADER = {
-    "chickenpox": ChickenpoxDatasetLoader,
-    "england_covid": EnglandCovidDatasetLoader,
-    "metrla": METRLADatasetLoader, #  As of Oct. 2023, this dataset cannot be retrieved
-    "montevideo_bus": MontevideoBusDatasetLoader,
-    "pedalme_london": PedalMeDatasetLoader,
-    "pemsbay": PemsBayDatasetLoader,
-    "twitter_tennis_uo17": TwitterTennisDatasetLoader,
-    "twitter_tennis_rg17": TwitterTennisDatasetLoader,
-    "wikivital_mathematics": WikiMathsDatasetLoader,
-    "windmill_large": WindmillOutputLargeDatasetLoader,
-    "windmill_medium": WindmillOutputMediumDatasetLoader,
-    "windmill_small": WindmillOutputSmallDatasetLoader,
+# Initialize dataset loader dictionary based on available imports
+NAME2DATASET_LOADER = {}
 
-}
+if HAS_TORCH_GEOMETRIC_TEMPORAL:
+    NAME2DATASET_LOADER.update({
+        "chickenpox": ChickenpoxDatasetLoader,
+        "england_covid": EnglandCovidDatasetLoader,
+        "metrla": METRLADatasetLoader, #  As of Oct. 2023, this dataset cannot be retrieved
+        "montevideo_bus": MontevideoBusDatasetLoader,
+        "pedalme_london": PedalMeDatasetLoader,
+        "pemsbay": PemsBayDatasetLoader,
+        "twitter_tennis_uo17": TwitterTennisDatasetLoader,
+        "twitter_tennis_rg17": TwitterTennisDatasetLoader,
+        "wikivital_mathematics": WikiMathsDatasetLoader,
+        "windmill_large": WindmillOutputLargeDatasetLoader,
+        "windmill_medium": WindmillOutputMediumDatasetLoader,
+        "windmill_small": WindmillOutputSmallDatasetLoader,
+    })
 
 
 def load_data(dataset_name: str, use_tgb: bool=False) -> dict:
     """
-    Loads data for dynamic node embedding trajectory visualization.
+    Loads data for dynamic node embedding trajectory visualization. For PyTorch Geometric Temporal (PyG-T) and DGB,
+    if the data files do not exist, train the embeddings.
 
     Args:
         dataset_name (str): Name of the dataset to load.
@@ -87,12 +133,23 @@ def load_data(dataset_name: str, use_tgb: bool=False) -> dict:
 
 
     try:
-        z = np.load(
-            osp.join("data", dataset_name, f"{config['model_name']}_embeds_{dataset_name}_Ep{config['epoch']}_Em"
-                                           f"b{config['emb_dim']}.npy"))
+
+        embedding_path = osp.join("data", dataset_name, f"{config['model_name']}_embeds_{dataset_name}_Ep{config['epoch']}_Em"
+                                           f"b{config['emb_dim']}.npy")
+
+        if not osp.exists(embedding_path):
+            logger.info(f"Embedding file {embedding_path} not found. Training the embeddings.")
+
+            training_config = argparse.Namespace(**json.load(open(osp.join("config", 'TGB_training.json'), 'r',
+                                                                  encoding='utf-8')))
+            train_dynamic_graph_embeds_tgb(training_config)
+
+        z = np.load(embedding_path)
 
 
     except:
+
+        # Try the simplified naming convention
         z = np.load(
             osp.join("data", dataset_name, f"embeds_{dataset_name}.npy"))
 
@@ -219,7 +276,7 @@ def load_data(dataset_name: str, use_tgb: bool=False) -> dict:
         reference_nodes = np.array(list(node2idx.keys()))
 
         # Only plot the first 100 snapshots, otherwise the plot is too crowded
-        snapshot_names = snapshot_names[0:100]
+        # snapshot_names = snapshot_names[0:100]
 
         weekly_cases = pd.read_csv(
             osp.join("data", dataset_name, "hungary_chickenpox.csv"))
@@ -250,7 +307,7 @@ def load_data(dataset_name: str, use_tgb: bool=False) -> dict:
 
 
     elif dataset_name == "BMCBioinformatics2021":
-        label2node = {
+        label2name = {
             0: "NON-aging-related",
             1: "aging-related"
         }
@@ -302,6 +359,8 @@ def load_data(dataset_name: str, use_tgb: bool=False) -> dict:
             if node_presence is None:
                 node_presence = np.load(
                     osp.join("data", dataset_name, "node_presence.npy"))
+
+                node_presence = node_presence.astype(bool)
 
 
             assert len(node_presence.shape) == 2

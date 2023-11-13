@@ -1,6 +1,8 @@
 # IDE and editor files
 .ipynb_checkpoints
 .idea/
+.claude/
+.vscode/
 /src/.idea/
 
 # Output and data files
@@ -61,3 +63,4 @@ _build/
 _static
 _templates
 
+/dygetviz/demo/

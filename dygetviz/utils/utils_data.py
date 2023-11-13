@@ -1,3 +1,5 @@
+import base64
+import io
 import json
 import logging
 import os
@@ -5,7 +7,17 @@ import os.path as osp
 import traceback
 from typing import Union
 
-from utils.utils_logging import configure_default_logging
+import pandas as pd
+
+# Fix relative imports
+try:
+    from .utils_logging import configure_default_logging
+except ImportError:
+    try:
+        from utils.utils_logging import configure_default_logging
+    except ImportError:
+        def configure_default_logging():
+            pass
 
 configure_default_logging()
 logger = logging.getLogger(__name__)
@@ -31,7 +43,31 @@ def to_dict(obj):
     return obj_dict
 
 
+def parse_contents(contents, filename):
+    content_type, content_string = contents.split(",")
+    decoded = base64.b64decode(content_string)
+    try:
+        if "csv" in filename:
+            # Assuming the uploaded file is a CSV, parse it
+            df = pd.read_csv(io.StringIO(decoded.decode("utf-8")))
+            return df
+        else:
+            return "Invalid file format, please upload a CSV file."
+    except Exception as e:
+        print(e)
+        return "An error occurred while processing the file."
+
+
+
 def read_markdown_into_html(path: str):
+    """
+    An archived function that reads markdown into html.
+    Args:
+        path:
+
+    Returns:
+
+    """
     import markdown
     with open(path, 'r', encoding='utf-8') as markdown_file:
         markdown_text = markdown_file.read()

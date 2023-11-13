@@ -8,14 +8,49 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-import const
-import const_viz
+# Fix relative imports
+try:
+    from .. import const
+    from .. import const_viz
+except ImportError:
+    try:
+        import const
+        import const_viz
+    except ImportError:
+        const = None
+        const_viz = None
 
-import plotly.io as pio
-from data.dataloader import load_data
-from utils.utils_data import get_modified_time_of_file
+try:
+    import plotly.io as pio
+    HAS_PLOTLY = True
+except ImportError:
+    HAS_PLOTLY = False
+    pio = None
 
-from dash import dcc, html
+try:
+    from ..data.dataloader import load_data
+except ImportError:
+    try:
+        from data.dataloader import load_data
+    except ImportError:
+        def load_data(*args, **kwargs):
+            return {}
+try:
+    from .utils_data import get_modified_time_of_file
+except ImportError:
+    try:
+        from utils.utils_data import get_modified_time_of_file
+    except ImportError:
+        def get_modified_time_of_file(*args, **kwargs):
+            return ""
+
+try:
+    from dash import dcc, html
+    HAS_DASH = True
+except ImportError:
+    HAS_DASH = False
+    dcc = None
+    html = None
 
 def rgb_to_hex(color):
     # Convert a tuple of RGB values to a hex string

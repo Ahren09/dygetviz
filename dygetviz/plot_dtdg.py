@@ -59,6 +59,7 @@ def get_visualization_cache(dataset_name: str, device: str, model_name: str,
 
     print("TODO")
     if dataset_name.startswith("tgbl"):
+
         data = load_data(dataset_name, True)
     else:
         data = load_data(dataset_name)
@@ -78,9 +79,6 @@ def get_visualization_cache(dataset_name: str, device: str, model_name: str,
     reference_nodes = data["reference_nodes"]
     snapshot_names = data["snapshot_names"]
     z = data["z"]
-
-    DEBUG = False
-
     visual_dir = osp.join("outputs", "visual", dataset_name)
 
     # Enable this line if we want to include all trajectories when we generate the visualization cache (*.json) files.
@@ -270,9 +268,6 @@ def get_visualization_cache(dataset_name: str, device: str, model_name: str,
                                  all_possible_idx_reference_node.cpu()] * interpolation + z_projected_coords * (
                                          1 - interpolation)
 
-            if DEBUG:
-                print("[Sanity Check] The following should print True:",
-                      np.allclose(embedding_test, embedding_test2.__array__()))
 
             # if DEBUG:
             for i, node in enumerate(projected_nodes):
@@ -413,7 +408,7 @@ def get_visualization_cache(dataset_name: str, device: str, model_name: str,
 
                 fig_line.data[0].hovertemplate = get_hovertemplate(
                     fields_in_customdata=fields, is_trajectory=True)
-                print(get_hovertemplate(fields_in_customdata=fields, is_trajectory=True))
+
                 for frame in traces_of_line:
                     frame.line.color = colors[idx]
                     frame.line.width = 5
