@@ -11,14 +11,11 @@ import pandas as pd
 # Fix relative imports
 try:
     from .. import const
-    from .. import const_viz
 except ImportError:
     try:
         import const
-        import const_viz
     except ImportError:
         const = None
-        const_viz = None
 
 try:
     import plotly.io as pio
@@ -169,7 +166,7 @@ def get_nodes_and_options(data, visual_dir, visualization_model=const.TSNE):
     if display_node_type:
         labels = sorted(list(label2node.keys()))
         label2palette = dict(zip(labels,
-                                const_viz.pure_color_palettes[:len(label2node)]))
+                                const.pure_color_palettes[:len(label2node)]))
         label2colors = {label: get_colors(12, label2palette[label])[::-1] for label in labels}
     else:
         # Otherwise, we use a single color family for all nodes. But the colors are very distinct

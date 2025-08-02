@@ -16,7 +16,7 @@ from dash.dependencies import Input, Output, State
 from tqdm import tqdm
 
 import const
-import const_viz
+import const
 from arguments import parse_args
 from data.dataloader import load_data, load_data_description
 from utils.utils_misc import project_setup
@@ -306,11 +306,6 @@ def update_graph(dataset_name, trajectory_names, clickData, current_figure, traj
 
 
     if action_name == 'add-trajectory':
-
-        """
-        From Yiqiao: I am not sure if directly modifying `current_figure` is a good practice as it will modify the original object, which can lead to unexpected behavior. In Plotly, figures are mutable objects
-
-        """
 
         fig = cached_figure
 

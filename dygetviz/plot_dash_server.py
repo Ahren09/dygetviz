@@ -16,7 +16,7 @@ from dash.dependencies import Input, Output, State
 from tqdm import tqdm
 
 import const
-import const_viz
+import const
 from arguments import parse_args
 from data.dataloader import load_data
 from utils.utils_data import read_markdown_into_html
@@ -41,7 +41,6 @@ for dataset_name in dataset_names:
     data = load_data(dataset_name)
     visual_dir = osp.join(args.output_dir, "visual", dataset_name)
 
-    # Yiqiao: The number of arguments returned do not match
     # nodes, node2trace, label2colors, options, cached_frames, cached_layout = get_nodes_and_options(data, visual_dir)
     nodes, node2trace, label2colors, options, cached_frames = get_nodes_and_options(data, visual_dir)
     # Can refactor this into one dict later...
@@ -151,9 +150,6 @@ app.layout = html.Div(
         dcc.Store(
             id='trajectory-names-store',
             data=[]),
-
-        # Yiqiao (2023.8.24): Now we do not consider the color picker since it will give the user too much freedom
-
         # dbc.Row([
         #     dbc.Col([
         #         html.Label("Change Trajectory Color:"),
@@ -340,12 +336,6 @@ def update_graph(dataset_name, trajectory_names, clickData, current_figure, traj
 
 
     if action_name == 'add-trajectory':
-
-        """
-        From Yiqiao: I am not sure if directly modifying `current_figure` is a good practice as it will modify the original object, which can lead to unexpected behavior. In Plotly, figures are mutable objects
-
-        """
-
         fig = go.Figure()
         fig.update_layout(
             plot_bgcolor='white',

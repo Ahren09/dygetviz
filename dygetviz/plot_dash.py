@@ -19,7 +19,7 @@ from tqdm import tqdm
 # import dash_ag_grid as dag  # Disabled due to upload panel being disabled
 
 import const
-import const_viz
+import const
 from arguments import parse_args
 from components.dygetviz_components import graph_with_loading, dataset_description, interpretation_of_plot, \
     visualization_panel
@@ -115,7 +115,7 @@ options = []
 if display_node_type:
     labels = sorted(list(label2node.keys()))
     label2palette = dict(zip(labels,
-                             const_viz.pure_color_palettes[:len(label2node)]))
+                             const.pure_color_palettes[:len(label2node)]))
     label2colors = {label: get_colors(12, label2palette[label])[::-1] for label
                     in labels}
 
@@ -320,7 +320,6 @@ app.layout = html.Div(
 
 
 
-        # Yiqiao (2023.8.24): Now we do not consider the color picker since it will give the user too much freedom
 
         # dbc.Row([
         #     dbc.Col([
@@ -495,12 +494,6 @@ def update_graph(trajectory_names, clickData, current_figure,
         return fig, trajectory_names
 
     elif action_name == 'add-trajectory':
-
-        """
-        From Yiqiao: I am not sure if directly modifying `current_figure` is a good practice as it will modify the original object, which can lead to unexpected behavior. In Plotly, figures are mutable objects
-
-        """
-
         fig = go.Figure()
         fig.update_layout(
             plot_bgcolor='white',

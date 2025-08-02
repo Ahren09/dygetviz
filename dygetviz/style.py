@@ -1,4 +1,4 @@
-from const_viz import *
+from const import *
 
 def adjust_node_color_size(fig):
     for i in range(len(fig.data)):

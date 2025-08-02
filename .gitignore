@@ -43,7 +43,6 @@ TrainingLog.md
 
 # Image files
 .DS_Store
-*.png
 
 # Machine learning and data analysis files
 *.pt

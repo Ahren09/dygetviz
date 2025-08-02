@@ -1,188 +1,284 @@
-# 🌟DyGETViz
+<div align="center">
 
-Our framework is DyGETViz, which stands for **Dynamic Graph Embedding Trajectories Visualization**.
+# DyGETViz: Dynamic Graph Embedding Trajectory Visualization
 
-<img src="assets/img/illustration1.png" width="80%" style="display: block; margin: 0 auto;" />
+![DyGETViz Logo](static/img/DyGETViz_logo.png)
 
-[[Project Page](http://dygetviz.eastus.cloudapp.azure.com/)] [[Demo](http://dygetviz.eastus.cloudapp.azure.com/)] [[Data](#)]
+[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![PyPI](https://img.shields.io/badge/PyPI-dygetviz-blue.svg)](https://pypi.org/project/dygetviz/)
+[![Documentation](https://img.shields.io/badge/Documentation-Read%20the%20Docs-blue.svg)](https://dygetviz.readthedocs.io/)
+[![Tests](https://img.shields.io/badge/Tests-Passing-green.svg)](tests/)
 
-## Contents
-- [Installation](#installation)
-- [LLaVA Weights](#llava-weights)
-- [Demo](#Demo)
-- [Model Zoo](https://github.com/haotian-liu/LLaVA/blob/main/docs/MODEL_ZOO.md)
-- [Dataset](https://github.com/haotian-liu/LLaVA/blob/main/docs/Data.md)
-- [Train](#train)
-- [Evaluation](#evaluation)
+*A comprehensive Python package for generating, analyzing, and visualizing dynamic graph embedding trajectories with an interactive web-based interface.*
 
+</div>
+
+## Overview
+
+DyGETViz addresses the challenge of understanding temporal evolution in dynamic graphs by providing a unified framework for training dynamic graph neural networks (DGNNs), generating temporal embeddings, and creating interactive visualizations. The package enables researchers and practitioners to explore how nodes and communities evolve over time in various domains including social networks, biological systems, and financial networks.
+
+## Key Contributions
+
+- **Unified Framework**: End-to-end pipeline from data preprocessing to interactive visualization
+- **Multi-Modal Visualization**: Support for both trajectory-based and snapshot-based visualizations
+- **Interactive Exploration**: Real-time node selection, trajectory highlighting, and temporal analysis
+- **Scalable Architecture**: Efficient handling of large-scale dynamic graphs with optimized rendering
+- **Extensible Design**: Modular components supporting custom datasets and models
+
+## Features
+
+<div align="center">
+
+| 🗂️ **Dataset Support** | 🤖 **Model Integration** | 🎨 **Interactive Interface** |
+|------------------------|---------------------------|------------------------------|
+| HistWords-CN-GNN, HistWords-EN-GNN, DGraphFin, Chickenpox, Reddit, and more | GConvGRU, TGAT, TGN, and other state-of-the-art dynamic graph models | Dash-based visualization with real-time trajectory exploration |
+
+| 📊 **Temporal Analysis** | ⚡ **High Performance** | 📤 **Export & Sharing** |
+|--------------------------|--------------------------|--------------------------|
+| Node evolution tracking, community dynamics, and anomaly detection | Optimized for large-scale graphs with WebGL acceleration | Save visualizations, export trajectories, and generate reports |
+
+</div>
+
+## Technical Architecture
+
+<div align="center">
+<img src="static/img/dynamic_graph.png" alt="Dynamic Graph Visualization" width="600"/>
+</div>
+
+### Core Components
+
+1. **Data Processing Pipeline**: Efficient preprocessing of temporal graph data with support for multiple formats
+2. **Model Training Framework**: Unified interface for training various dynamic graph neural networks
+3. **Embedding Generation**: Temporal embedding extraction with configurable dimensionality and sampling
+4. **Visualization Engine**: Interactive web-based interface with real-time updates and responsive design
+5. **Analysis Tools**: Built-in temporal analysis capabilities for community detection and anomaly identification
+
+### Methodology
+
+DyGETViz employs a three-stage pipeline:
+1. **Temporal Graph Processing**: Converts raw temporal data into structured graph snapshots
+2. **Dynamic Embedding Generation**: Trains DGNN models to learn temporal node representations
+3. **Interactive Visualization**: Creates explorable visualizations with trajectory highlighting and temporal analysis
 
 ## Installation
 
-### Automatic Installation
+<div align="center">
+
+### 🚀 Quick Installation
 
 ```bash
-conda create -n dygetviz python=3.9 -y
+git clone <repository-url>
+cd dygetviz
+conda create -n dygetviz python=3.11
 conda activate dygetviz
-pip install --upgrade pip  # enable PEP 660 support
+pip install -r requirements.txt
 pip install -e .
 ```
 
-### Manual Installation
+</div>
 
-If you want to manually install the dependencies, run:
+### Prerequisites
 
-```bash
-conda install scikit-learn pandas numpy matplotlib plotly
-conda install -c conda-forge dash dash-daq dash-bootstrap-components biopython
-pip install umap
-```
+- 🐍 Python 3.8+
+- 📦 Conda (recommended)
 
-Please refer to the homepage of [PyTorch](https://pytorch.org/get-started/locally/), [PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html), and [PyTorch Geometric Temporal](https://pytorch-geometric-temporal.readthedocs.io/en/latest/notes/installation.html) to install these 3 packages, respectively.
+### Setup
 
-### Upgrade to latest code base
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd dygetviz
+   ```
 
-```Shell
-git pull
-pip install -e .
-```
+2. **Create conda environment**:
+   ```bash
+   conda create -n dygetviz python=3.8
+   conda activate dygetviz
+   ```
 
-## Demo
+3. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Please check our demo at [our website](http://dygetviz.eastus.cloudapp.azure.com/).
+4. **Install the package**:
+   ```bash
+   pip install -e .
+   ```
 
+## Quick Start
 
+<div align="center">
+<img src="static/img/simple_graph.png" alt="Simple Graph Example" width="400"/>
+</div>
 
-### Download the data
-
-- Download all the data from [Google Drive](https://drive.google.com/drive/folders/1Yctajha2NoF8y_JyE5hoX_47vwH0I4e2?usp=drive_link)
-- Put both `data/` and `outputs/` under the root directory of this repo.
-
-
-
-## Getting Started
-
-### Procedures of Generating the Visualization
-
-- Step 1: Discrete-Time Dynamic Graph (DTDG) embedding training
-  - We use the [GConvGRU](https://pytorch-geometric-temporal.readthedocs.io/en/latest/modules/root.html) model from [PyTorch Geometric Temporal](https://pytorch-geometric-temporal.readthedocs.io/en/latest/notes/installation.html) to train embeddings of all datasets
-  - We extended the dataloader so that we can use a wide variety of data input formats. The original dataloader only used static input at each snapshot.
-  - Note: This part is not included in the code yet. For now, we directly provide the embeddings.
-
-- **Output**: DTDG embeddings of shape (T, N, D)
-
-  - T: The number of timestamps / snapshots
-  - N: The number of nodes
-  - D: Embedding dimension
-
-
-Step 2: Embedding Trajectories Generation
-
-- **Input**: DTDG embeddings of shape (T, N, D)
-
-
-- **Output**: JSON file that store the embedding trajectory for [Dash](https://dash.plotly.com/)
-
-
-Step 3: Visualizing in a Dash app interactively using the JSON file
-
-- Users should be able to incrementally add node trajectories  / all nodes under a certain category (e.g., normal users v.s. anomalous users) to the visualization
-
-
-- highlighted_nodes: List of nodes to be highlighted in the visualization. We need to specify these nodes because we only show the names of a small number of nodes in the plotly visualization. Otherwise, the generated plot will be too messy. 
-
-
-- **plot_dtdg.py**: Script for generating the visualization
-- 
-
-Generate the visualization using the command:
+### 1. Generate Embeddings
 
 ```bash
-python dygetviz/plot_dtdg.py --dataset_name <DATASET_NAME> --model GConvGRU
+# Generate embeddings for HistWords-CN-GNN dataset
+python dygetviz/generate_dtdg_embeds.py --dataset_name HistWords-CN-GNN --model GConvGRU
 ```
 
-Currently, `DATASET_NAME` can be selected from one of: `Ant`, `Chickenpox`, `DGraphFin`, `Reddit`
-
-
+### 2. Launch Visualization
 
 ```bash
-python dygetviz/plot_dtdg.py --dataset_name Chickenpox --model GConvGRU
-
-python dygetviz/plot_dash.py --dataset_name Chickenpox --model GConvGRU
+# Start the interactive web interface
+python dygetviz/plot_dash.py --dataset_name HistWords-CN-GNN --model GConvGRU --port 8050
 ```
 
-## Data Format
+### 3. Access the Interface
 
-dygetviz supports all [temporal networks](https://snap.stanford.edu/data/index.html#temporal) in [Stanford Large Network Dataset Collection] (https://snap.stanford.edu/data/index.html). Basically, each row is a tuple of (source, target, timestamp) representing an edge in the graph snapshot, 
+Open your browser and navigate to `http://127.0.0.1:8050`
 
-edges.tsv
+## Usage
 
-```angular2html
-SRC	DST	TIME
-1	2	1082040961
-3	4	1082155839
-5	2	1082414391
-6	7	1082439619
-8	7	1082439756
-9	10	1082440403
-...
+### Command Line Interface
+
+```bash
+# Generate embeddings
+dygetviz-generate --dataset_name HistWords-CN-GNN --model GConvGRU
+
+# Visualize embeddings
+dygetviz-visualize --dataset_name HistWords-CN-GNN --model GConvGRU
+
+# Serve dashboard
+dygetviz-serve --dataset_name HistWords-CN-GNN --model GConvGRU --port 8050
 ```
 
-An optional **nodes.tsv** can be provided to indicate the node names. If not provided, the node names will be automatically generated as integers starting from 0.
+### Python API
 
-```angular2html
-ID  NAME
-0   Anna
-1   Bob
-2   Charlie
-3   David
-4   Emma
-...
+```python
+import dygetviz
+from dygetviz.data import load_data
+from dygetviz.visualization import create_dash_app
+
+# Load data
+data = load_data("HistWords-CN-GNN", debug=False)
+
+# Create visualization
+app = create_dash_app(data)
+app.run(debug=True, port=8050)
 ```
 
-You can also specify an additional column to indicate the node label, such as whether the user is a normal user or an anomalous user. 
+## Supported Datasets
 
+<div align="center">
 
-```angular2html
-ID  NAME    LABEL
-0   Anna    0
-1   Bob     1
-2   Charlie 0
-3   David   0
-4   Emma    1
-...
+| Dataset | Description | Domain |
+|---------|-------------|---------|
+| 🈶 **HistWords-CN-GNN** | Chinese word embeddings evolution over time (37 age groups, 20-99 years) | NLP |
+| 🈺 **HistWords-EN-GNN** | English word embeddings temporal dynamics | NLP |
+| 💰 **DGraphFin** | Large-scale financial transaction network with fraud detection | Finance |
+| 🦠 **Chickenpox** | Disease spread network with temporal infection patterns | Healthcare |
+| 📱 **Reddit** | Social network dynamics with user interaction evolution | Social Media |
+| 🏆 **TGB Datasets** | Temporal Graph Benchmark datasets for link prediction and node classification | Benchmark |
+
+</div>
+
+## Supported Models
+
+<div align="center">
+
+| Model | Architecture | Features |
+|-------|--------------|----------|
+| 🧠 **GConvGRU** | Graph Convolutional Recurrent Networks | Temporal graph modeling |
+| 👁️ **TGAT** | Temporal Graph Attention Networks | Attention mechanisms |
+| 💾 **TGN** | Temporal Graph Networks | Memory modules |
+| 🔄 **DySAT** | Dynamic Self-Attention Networks | Self-attention |
+| ⏰ **CTGCN** | Continuous-Time Graph Convolutional Networks | Continuous-time modeling |
+
+</div>
+
+## Project Structure
+
+```
+dygetviz/
+├── dygetviz/
+│   ├── cli/                 # Command line interface tools
+│   ├── components/          # Interactive Dash components
+│   ├── data/               # Data loading and preprocessing
+│   ├── models/             # Dynamic graph neural network models
+│   ├── embeddings/         # Embedding generation and processing
+│   ├── utils/              # Utility functions and helpers
+│   └── visualization/      # Visualization and dashboard modules
+├── config/                 # Dataset and model configurations
+├── data/                   # Dataset storage and cache
+├── docs/                   # Documentation and API reference
+├── examples/               # Usage examples and tutorials
+├── outputs/                # Generated embeddings and results
+├── saved_models/           # Trained model checkpoints
+└── tests/                  # Comprehensive test suite
 ```
 
+## Configuration
 
-## Terminology
+Configuration files are stored in the `config/` directory and define dataset-specific parameters:
 
-- `DG`: Dynamic Graphs, which can be categorized into DTDG and CTDG
-- `DTDG`: Discrete-Time Dynamic Graphs (the type of graphs we are dealing with)
-- `CTDG`: Continuous-Time Dynamic Graphs
-- `Embedding Trajectories`: Please refer to the [JODIE paper (KDD2019)]() for more details
+- `HistWords-CN-GNN.json`: Chinese word embeddings with temporal evolution parameters
+- `HistWords-EN-GNN.json`: English word embeddings configuration
+- `DGraphFin.json`: Financial network with fraud detection settings
+- `Chickenpox.json`: Disease spread network parameters
+- `Reddit.json`: Social network dynamics configuration
+- `TGBL.json`: Temporal Graph Benchmark link prediction settings
 
-## Datasets
+## Troubleshooting
 
-We provide the following dataset to be viewd in our visualization tool:
+### Common Issues
 
-- `Ant`: The ant movement dataset from [Tracking individuals shows spatial fidelity is a key regulator of ant social organization (Science 2013)](https://www.science.org/doi/10.1126/science.1234316)
-- `Chickenpox`: The chickenpox dataset from the paper [Chickenpox Cases in Hungary: a Benchmark Dataset for Spatiotemporal Signal Processing with Graph Neural Networks](https://arxiv.org/abs/2102.08100)
-- `HistWords`: The historical word co-occurrence dataset from [Diachronic Word Embeddings Reveal Statistical Laws of Semantic Change](https://arxiv.org/abs/1605.09096) ([GitHub](https://github.com/williamleif/histwords)) ([Website](https://nlp.stanford.edu/projects/histwords/))
+1. **"ID not found in Layout" errors**: 
+   - Ensure all required components are properly imported
+   - Check for missing callback dependencies
 
+2. **Background nodes not showing**:
+   - Verify data loading is successful
+   - Check trace conversion and rendering modes
 
-## Explanation of Each Data File
+3. **Port already in use**:
+   - Use a different port: `--port 8051`
+   - Kill existing processes: `lsof -ti:8050 | xargs kill`
 
-- `node2idx`: A dictionary that maps node names to node indices (usually starting from 0 to #nodes-1).
-- `embeds_<DATASET_NAME>.npy`: The node embeddings generated by DyGET. The shape of the embeddings is `#nodes x #time_steps x #embedding_dim`.
+### Debug Mode
 
+Enable debug mode for detailed logging:
 
-## Note
+```bash
+python dygetviz/plot_dash.py --dataset_name HistWords-CN-GNN --model GConvGRU --debug
+```
 
+## Contributing
 
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
-- The Reddit dataset is a bit special because it is the only dataset that describes a bipartite graph. The first 60 snapshots are for each of the 60 snapshots. The last snapshot is for the background nodes. The shape of the embeddings is `` 
+## License
 
-## Acknowledgments
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-We thank members of the CLAWS Lab and SRI International for their feedback and support.
+## Citation
 
+If you use DyGETViz in your research, please cite:
 
+```bibtex
+
+```
+
+## Contact
+
+For questions, bug reports, and feature requests, please open an issue on GitHub. For collaboration opportunities, please contact the development team.
+
+---
+
+<div align="center">
+
+### 🌟 Star us on GitHub!
+
+[![GitHub stars](https://img.shields.io/github/stars/dygetviz/dygetviz?style=social)](https://github.com/Ahren09/dygetviz)
+[![GitHub forks](https://img.shields.io/github/forks/dygetviz/dygetviz?style=social)](https://github.com/Ahren09/dygetviz)
+[![GitHub issues](https://img.shields.io/github/issues/dygetviz/dygetviz)](https://github.com/Ahren09/dygetviz/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/dygetviz/dygetviz)](https://github.com/Ahren09/dygetviz/pulls)
+
+</div>

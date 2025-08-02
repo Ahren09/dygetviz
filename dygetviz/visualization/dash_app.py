@@ -21,7 +21,7 @@ sys.path.insert(0, osp.join(osp.dirname(__file__), '..', '..'))
 import dash_ag_grid as dag
 
 from dygetviz import const
-from dygetviz import const_viz
+from dygetviz import const
 from dygetviz.arguments import parse_args
 from dygetviz.components.dygetviz_components import (
     graph_with_loading, dataset_description, interpretation_of_plot,

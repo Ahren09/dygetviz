@@ -20,7 +20,7 @@ from tqdm import tqdm
 
 import const
 from arguments import parse_args
-from const_viz import *
+from const import *
 from data.dataloader import load_data
 from utils.utils_logging import configure_default_logging
 from utils.utils_misc import project_setup, get_visualization_name
